@@ -1,4 +1,4 @@
-const cacheName = 'HenkanTrainer-v0.1'
+const cacheName = 'HenkanTrainer-v0.2'
 const cacheUrls = [
   './',
   'index.html',

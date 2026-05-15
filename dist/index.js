@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
     if (navigator.language != null && navigator.language.length > 0) {
         document.documentElement.lang = navigator.language;
     }
+    // ========== ========== タイマー ========== ==========
+    const timer = new TickingTimer();
+    /** １回の練習時間 [秒] */
+    const T_EXERCISE = 180;
     const current = {
         state: 'opening',
         letters: 0,
@@ -40,16 +44,14 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
     const lastTypos = document.getElementById('last-typos');
     // const lastTyposContainer = document.getElementById('last-typos-container') as HTMLSpanElement;
     const conguraturations = document.getElementById('conguraturations');
+    const exercisePeriod = document.getElementById('exercise-period');
+    exercisePeriod.textContent = (T_EXERCISE / 60).toString();
     const logOpenButton = document.getElementById('log-open');
     const logCloseButton = document.getElementById('log-close');
     const logDialog = document.getElementById('log-dialog');
     const logText = document.getElementById('log-text');
     const CLASS_HIDE = 'hide';
     const CLASS_EM = 'emphasize';
-    // ========== ========== タイマー ========== ==========
-    const timer = new TickingTimer();
-    /** １回の練習時間 [秒] */
-    const T_EXERCISE = 30;
     // ========== ========== 本件特有の関数いろいろ ========== ==========
     function updateState(newState) {
         current.state = newState;

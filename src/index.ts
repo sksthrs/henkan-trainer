@@ -23,6 +23,13 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
     document.documentElement.lang = navigator.language;
   }
 
+  // ========== ========== タイマー ========== ==========
+
+  const timer = new TickingTimer();
+
+  /** １回の練習時間 [秒] */
+  const T_EXERCISE = 180;
+
   // ========== ========== 定数・変数 ========== ==========
 
   type AppOpState = 'opening' | 'exercising' | 'finished';
@@ -74,6 +81,9 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
 
   const conguraturations = document.getElementById('conguraturations') as HTMLDivElement;
 
+  const exercisePeriod = document.getElementById('exercise-period') as HTMLSpanElement;
+  exercisePeriod.textContent = (T_EXERCISE / 60).toString();
+
   const logOpenButton = document.getElementById('log-open') as HTMLButtonElement;
 
   const logCloseButton = document.getElementById('log-close') as HTMLButtonElement;
@@ -85,13 +95,6 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
   const CLASS_HIDE = 'hide';
 
   const CLASS_EM = 'emphasize';
-
-  // ========== ========== タイマー ========== ==========
-
-  const timer = new TickingTimer();
-
-  /** １回の練習時間 [秒] */
-  const T_EXERCISE = 30;
 
   // ========== ========== 本件特有の関数いろいろ ========== ==========
 
