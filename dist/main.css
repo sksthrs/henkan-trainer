@@ -1,0 +1,200 @@
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  border: none;
+  color: black;
+  background-color: white;
+  font-family: sans-serif;
+  font-size: 18px;
+  touch-action: manipulation; /* disable double-tap action (mishandled on font-size changes) */
+}
+
+div {
+  margin: 0;
+  padding: 0;
+}
+
+input, button, select, option {
+  font-size: 100%;
+}
+
+/* ==================== Generic classes ==================== */
+
+.flex-v {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-h {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-v-stretch {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  align-items: stretch;
+}
+
+.flex-v-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-h-center {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+.flex-fixed {
+  flex-grow: 0;
+}
+
+.center {
+  text-align: center;
+}
+
+.hide {
+  display: none;
+}
+
+.emphasize {
+  color: red;
+  font-weight: bold;
+}
+
+/* ==================== Specific styles ==================== */
+
+#app {
+  top: 0;
+  left: 0;
+  width: 100dvw;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3dvh;
+}
+
+#tool {
+  min-width: 80%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+
+#remaining {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#description {
+  line-height: 140%;
+}
+
+#last-score {
+  border: 1px solid #404040;
+  padding: 2dvh 2dvw;
+}
+
+#last-score * {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+#conguraturations {
+  color: #008000;
+  font-weight: bold;
+  text-align: center;
+}
+
+#exercise {
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5dvh;
+}
+
+#phrase {
+  flex-grow: 1;
+  background-color: #ddddff;
+  width: 100%;
+  padding: 0.5em 0.5em;
+  text-align: center;
+  font-size: min(8dvh, 8dvw);
+  font-weight: bold;
+  line-height: 150%;
+}
+
+.shortcut {
+  color: #008000;
+  text-decoration: underline;
+}
+
+#phrase .typo {
+  background-color: #ff0000;
+}
+
+#type {
+  width: 100%;
+}
+
+#type-input {
+  width: 100%;
+  font-size: min(6dvh, 6dvw);
+  padding: 0.2em 0.2em;
+}
+
+#log-open {
+  display: block;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border: none;
+  color: #f0f0f0;
+  background-color: white;
+  font-size: 12pt;
+}
+
+#log-content {
+  width: 90dvw;
+  height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+#log-text {
+  flex-grow: 1;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  line-break: anywhere;
+  white-space: break-spaces;
+}
