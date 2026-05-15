@@ -1,6 +1,6 @@
-# TegakiTrainer
+# HenkanTrainer
 
-手書き要約筆記練習用の例文読み上げツール
-Tool for training note-taking by hand
+パソコン要約筆記の入力と変換両方の練習ツール
+Tool for training PC note-taking using IME
 
-https://sksthrs.github.io/tegaki-trainer/
+https://sksthrs.github.io/henkan-trainer/dist/
