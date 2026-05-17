@@ -142,7 +142,7 @@ input, button, select, option {
 
 #phrase {
   flex-grow: 1;
-  background-color: #ddddff;
+  background-color: #f4f4ff;
   width: 100%;
   padding: 0.5em 0.5em;
   text-align: center;
