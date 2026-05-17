@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
 
   // ========== ========== 定数・変数 ========== ==========
 
-  type AppOpState = 'opening' | 'exercising' | 'finished';
+  type AppOpState = 'opening' | 'exercising' | 'finishing' | 'finished';
 
   type AppState = {
     state: AppOpState,
@@ -49,6 +49,8 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
   };
 
   const openingDialog = document.getElementById('opening') as HTMLDialogElement;
+
+  const instructionArea = document.getElementById('instruction') as HTMLDivElement;
 
   /** 問題文表示領域 */
   const phraseDisplay = document.getElementById('phrase') as HTMLDivElement;
@@ -84,6 +86,8 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
   const exercisePeriod = document.getElementById('exercise-period') as HTMLSpanElement;
   exercisePeriod.textContent = (T_EXERCISE / 60).toString();
 
+  const eraseButton = document.getElementById('erase-records') as HTMLButtonElement;
+
   const logOpenButton = document.getElementById('log-open') as HTMLButtonElement;
 
   const logCloseButton = document.getElementById('log-close') as HTMLButtonElement;
@@ -94,7 +98,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
 
   const CLASS_HIDE = 'hide';
 
-  const CLASS_EM = 'emphasize';
+  const CLASS_UNAVAILABLE = 'unavailable';
 
   // ========== ========== 本件特有の関数いろいろ ========== ==========
 
@@ -104,6 +108,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
       case "opening":
         updateLastResult();
         openingDialog.showModal();
+        eraseButton.blur();
         break;
       case "exercising":
         current.letters = 0;
@@ -114,12 +119,28 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
         typeArea.disabled = false;
         typeArea.focus();
         break;
-      case "finished":
+      case "finishing":
         typeArea.blur();
         typeArea.focus();
         typeArea.disabled = true;
+        instructionArea.classList.add(CLASS_UNAVAILABLE);
         updateLastResult();
+        updateStatusArea();
         openingDialog.showModal();
+        eraseButton.blur();
+        lastScore.animate(
+          [
+            { backgroundColor: '#000000' },
+            { backgroundColor: '#ffff00', offset: 0.2 },
+            { backgroundColor: '#ffffff' },
+          ],
+          {
+            duration: 2000,
+          }
+        );
+        break;
+      case "finished":
+        instructionArea.classList.remove(CLASS_UNAVAILABLE);
         break;
     }
   }
@@ -136,7 +157,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
   }
 
   function updateLastResult(): void {
-    if (current.state !== 'finished') {
+    if (current.state === 'opening' || current.state === 'exercising') {
       lastScore.style.display = 'none';
     } else {
       lastScore.style.display = 'block';
@@ -145,19 +166,17 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
       lastMaxLetters.textContent = highscore.letters.toString();
       lastPhrases.textContent = current.phrases.toString();
       lastTypos.textContent = current.typos.toString();
-      // if (current.phrases > 0 && current.typos < 1) {
-      //   lastTyposContainer.classList.remove(CLASS_EM);
-      // } else {
-      //   lastTyposContainer.classList.add(CLASS_EM);
-      // }
     }
   }
 
   function setEventHandlers(): void {
     document.addEventListener('keyup', ev => {
-      if (current.state !== 'exercising' && ev.keyCode === 13) {
-        Sound.obj().prepareSounds();
-        Sound.obj().playSound('start');
+      if (
+        ev.keyCode === 13 
+        && current.state !== 'exercising' 
+        && current.state !== 'finishing'
+      ) {
+        Sound.obj().prepareSounds('start');
         PhraseManager.obj().init();
         updateState('exercising');
         setNewPhrase();
@@ -195,12 +214,15 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
           current.typos,
           timer.getStartTime(),
         );
-        updateState('finished');
-        if (ixRank === 1) {
-          Sound.obj().playSound('newRecord');
+        updateState('finishing');
+        const onFinish = () => {
+          updateState('finished');
+        };
+        if (ixRank === 1 && current.letters > 0) {
+          Sound.obj().playSound('newRecord', onFinish);
           conguraturations.classList.remove(CLASS_HIDE);
         } else {
-          Sound.obj().playSound('finish');
+          Sound.obj().playSound('finish', onFinish);
           conguraturations.classList.add(CLASS_HIDE);
         }
       }
@@ -224,6 +246,13 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
         updateStatusArea();
         Sound.obj().playSound('fail');
       }
+    });
+
+    eraseButton.addEventListener('click', _ => {
+      eraseButton.blur();
+      AppConfig.obj().clearRecords();
+      updateLastResult();
+      updateStatusArea();
     });
 
     logOpenButton.addEventListener('click', _ => {
@@ -314,14 +343,14 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
 
   // ========== ========== 初期処理 ========== ==========
 
-  openingDialog.showModal();
-
   // 音声一覧取得以外のイベントハンドラを設定
   setEventHandlers();
 
   updateStatusArea(0);
 
   updateLastResult();
+
+  updateState('opening');
 
 });
 
@@ -505,18 +534,6 @@ class Sound {
   // (end of singleton)
 
   readonly _SOUNDS: Record<SoundType, SoundData> = {
-    /** 正解サウンド */
-    pass: {
-      audio: new Audio('./sounds/pass.mp3'),
-      volume: 10,
-      isLoop: false,
-    },
-    /** 不正解サウンド */
-    fail: {
-      audio: new Audio('./sounds/fail.mp3'),
-      volume: 10,
-      isLoop: false,
-    },
     /** 練習開始サウンド */
     start: {
       audio: new Audio('./sounds/start.mp3'),
@@ -535,21 +552,47 @@ class Sound {
       volume: 10,
       isLoop: false,
     },
+    /** 正解サウンド */
+    pass: {
+      audio: new Audio('./sounds/pass.mp3'),
+      volume: 10,
+      isLoop: false,
+    },
+    /** 不正解サウンド */
+    fail: {
+      audio: new Audio('./sounds/fail.mp3'),
+      volume: 10,
+      isLoop: false,
+    },
   };
 
   private initialized = false;
 
-  /** サウンド準備 */
-  public prepareSounds(): void {
-    if (this.initialized) return;
-    // 音量初期化
-    for (const sound of Object.values(this._SOUNDS)) {
+  /**
+   * サウンドを準備する。
+   * @param nameToPlayNow この時点で鳴らしたいサウンドがあれば指定する
+   */
+  public prepareSounds(nameToPlayNow?: SoundType): void {
+    // 初回以外の処理
+    if (this.initialized) {
+      if (nameToPlayNow != null) {
+        this.playSound(nameToPlayNow);
+      }
+      return;
+    }
+
+    // サウンド読み込み＆初期設定
+    for (const kv of Object.entries(this._SOUNDS)) {
+      const key = kv[0];
+      const sound = kv[1];
       sound.audio.load();
       sound.audio.loop = sound.isLoop;
       const volume = Math.min(1.0, Math.max(0.0, sound.volume / 100));
       sound.audio.volume = volume;
       sound.audio.play();
-      sound.audio.pause();
+      if (nameToPlayNow == null || nameToPlayNow !== key) {
+        sound.audio.pause();
+      }
       Log.write(`[prepareSounds] sound[${sound.audio.baseURI}] volume=${volume}`);
     }
     this.initialized = true;
@@ -757,6 +800,11 @@ class AppConfig {
     this.saveConfig(this.appConfig);
 
     return (ixNewData < 0) ? ixNewData : (ixNewData + 1);
+  }
+
+  public clearRecords(): void {
+    this.appConfig.highScores.splice(0);
+    this.appConfig.recentScores.splice(0);
   }
 }
 

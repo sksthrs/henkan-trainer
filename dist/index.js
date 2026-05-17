@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
     // ========== ========== タイマー ========== ==========
     const timer = new TickingTimer();
     /** １回の練習時間 [秒] */
-    const T_EXERCISE = 180;
+    const T_EXERCISE = 30;
     const current = {
         state: 'opening',
         letters: 0,
@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
         typos: 0,
     };
     const openingDialog = document.getElementById('opening');
+    const instructionArea = document.getElementById('instruction');
     /** 問題文表示領域 */
     const phraseDisplay = document.getElementById('phrase');
     const typeForm = document.getElementById('type-form');
@@ -46,12 +47,13 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
     const conguraturations = document.getElementById('conguraturations');
     const exercisePeriod = document.getElementById('exercise-period');
     exercisePeriod.textContent = (T_EXERCISE / 60).toString();
+    const eraseButton = document.getElementById('erase-records');
     const logOpenButton = document.getElementById('log-open');
     const logCloseButton = document.getElementById('log-close');
     const logDialog = document.getElementById('log-dialog');
     const logText = document.getElementById('log-text');
     const CLASS_HIDE = 'hide';
-    const CLASS_EM = 'emphasize';
+    const CLASS_UNAVAILABLE = 'unavailable';
     // ========== ========== 本件特有の関数いろいろ ========== ==========
     function updateState(newState) {
         current.state = newState;
@@ -59,6 +61,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
             case "opening":
                 updateLastResult();
                 openingDialog.showModal();
+                eraseButton.blur();
                 break;
             case "exercising":
                 current.letters = 0;
@@ -69,12 +72,25 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
                 typeArea.disabled = false;
                 typeArea.focus();
                 break;
-            case "finished":
+            case "finishing":
                 typeArea.blur();
                 typeArea.focus();
                 typeArea.disabled = true;
+                instructionArea.classList.add(CLASS_UNAVAILABLE);
                 updateLastResult();
+                updateStatusArea();
                 openingDialog.showModal();
+                eraseButton.blur();
+                lastScore.animate([
+                    { backgroundColor: '#000000' },
+                    { backgroundColor: '#ffff00', offset: 0.2 },
+                    { backgroundColor: '#ffffff' },
+                ], {
+                    duration: 2000,
+                });
+                break;
+            case "finished":
+                instructionArea.classList.remove(CLASS_UNAVAILABLE);
                 break;
         }
     }
@@ -89,7 +105,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
         }
     }
     function updateLastResult() {
-        if (current.state !== 'finished') {
+        if (current.state === 'opening' || current.state === 'exercising') {
             lastScore.style.display = 'none';
         }
         else {
@@ -99,18 +115,14 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
             lastMaxLetters.textContent = highscore.letters.toString();
             lastPhrases.textContent = current.phrases.toString();
             lastTypos.textContent = current.typos.toString();
-            // if (current.phrases > 0 && current.typos < 1) {
-            //   lastTyposContainer.classList.remove(CLASS_EM);
-            // } else {
-            //   lastTyposContainer.classList.add(CLASS_EM);
-            // }
         }
     }
     function setEventHandlers() {
         document.addEventListener('keyup', ev => {
-            if (current.state !== 'exercising' && ev.keyCode === 13) {
-                Sound.obj().prepareSounds();
-                Sound.obj().playSound('start');
+            if (ev.keyCode === 13
+                && current.state !== 'exercising'
+                && current.state !== 'finishing') {
+                Sound.obj().prepareSounds('start');
                 PhraseManager.obj().init();
                 updateState('exercising');
                 setNewPhrase();
@@ -142,13 +154,16 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
                 }
                 // 練習完了状態に遷移
                 const ixRank = AppConfig.obj().addNewScore(current.letters, current.phrases, current.typos, timer.getStartTime());
-                updateState('finished');
-                if (ixRank === 1) {
-                    Sound.obj().playSound('newRecord');
+                updateState('finishing');
+                const onFinish = () => {
+                    updateState('finished');
+                };
+                if (ixRank === 1 && current.letters > 0) {
+                    Sound.obj().playSound('newRecord', onFinish);
                     conguraturations.classList.remove(CLASS_HIDE);
                 }
                 else {
-                    Sound.obj().playSound('finish');
+                    Sound.obj().playSound('finish', onFinish);
                     conguraturations.classList.add(CLASS_HIDE);
                 }
             }
@@ -171,6 +186,12 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
                 updateStatusArea();
                 Sound.obj().playSound('fail');
             }
+        });
+        eraseButton.addEventListener('click', _ => {
+            eraseButton.blur();
+            AppConfig.obj().clearRecords();
+            updateLastResult();
+            updateStatusArea();
         });
         logOpenButton.addEventListener('click', _ => {
             openLog();
@@ -243,11 +264,11 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
         typeArea.focus();
     }
     // ========== ========== 初期処理 ========== ==========
-    openingDialog.showModal();
     // 音声一覧取得以外のイベントハンドラを設定
     setEventHandlers();
     updateStatusArea(0);
     updateLastResult();
+    updateState('opening');
 });
 /**
  * ――――――――――――――――――――――――――――――
@@ -404,18 +425,6 @@ class Sound {
     static _obj;
     // (end of singleton)
     _SOUNDS = {
-        /** 正解サウンド */
-        pass: {
-            audio: new Audio('./sounds/pass.mp3'),
-            volume: 10,
-            isLoop: false,
-        },
-        /** 不正解サウンド */
-        fail: {
-            audio: new Audio('./sounds/fail.mp3'),
-            volume: 10,
-            isLoop: false,
-        },
         /** 練習開始サウンド */
         start: {
             audio: new Audio('./sounds/start.mp3'),
@@ -434,20 +443,44 @@ class Sound {
             volume: 10,
             isLoop: false,
         },
+        /** 正解サウンド */
+        pass: {
+            audio: new Audio('./sounds/pass.mp3'),
+            volume: 10,
+            isLoop: false,
+        },
+        /** 不正解サウンド */
+        fail: {
+            audio: new Audio('./sounds/fail.mp3'),
+            volume: 10,
+            isLoop: false,
+        },
     };
     initialized = false;
-    /** サウンド準備 */
-    prepareSounds() {
-        if (this.initialized)
+    /**
+     * サウンドを準備する。
+     * @param nameToPlayNow この時点で鳴らしたいサウンドがあれば指定する
+     */
+    prepareSounds(nameToPlayNow) {
+        // 初回以外の処理
+        if (this.initialized) {
+            if (nameToPlayNow != null) {
+                this.playSound(nameToPlayNow);
+            }
             return;
-        // 音量初期化
-        for (const sound of Object.values(this._SOUNDS)) {
+        }
+        // サウンド読み込み＆初期設定
+        for (const kv of Object.entries(this._SOUNDS)) {
+            const key = kv[0];
+            const sound = kv[1];
             sound.audio.load();
             sound.audio.loop = sound.isLoop;
             const volume = Math.min(1.0, Math.max(0.0, sound.volume / 100));
             sound.audio.volume = volume;
             sound.audio.play();
-            sound.audio.pause();
+            if (nameToPlayNow == null || nameToPlayNow !== key) {
+                sound.audio.pause();
+            }
             Log.write(`[prepareSounds] sound[${sound.audio.baseURI}] volume=${volume}`);
         }
         this.initialized = true;
@@ -614,6 +647,10 @@ class AppConfig {
         this.saveConfig(this.appConfig);
         return (ixNewData < 0) ? ixNewData : (ixNewData + 1);
     }
+    clearRecords() {
+        this.appConfig.highScores.splice(0);
+        this.appConfig.recentScores.splice(0);
+    }
 }
 /**
  * ――――――――――――――――――――――――――――――
@@ -714,8 +751,6 @@ class PhraseManager {
         Log.write(`[fillQuestionIdsWithRandom] shuffled=${JSON.stringify(idShuffled)}`);
         this.questionIds.push(...idShuffled);
     }
-    /** 日本語文字列を書記素単位に分割するためのオブジェクト */
-    segmenter = new Intl.Segmenter("ja-JP", { granularity: "grapheme" });
     // ========== ========== 登録単語処理 ========== ==========
     SHORTCUTS = [
         "難聴者",
@@ -744,9 +779,9 @@ class PhraseManager {
     ];
     // ========== ========== 出題フレーズそのもの ========== ==========
     PHRASES = [
-        "難聴者には正面から話しかける。",
+        "情報保障者の皆さま、ありがとうございました。",
         "聴覚障害の原因はさまざま。",
-        "聴覚障害者への情報保障が必要だ。",
+        "聴覚障害者への情報保障をよろしくお願いします。",
         "聴覚障害はコミュニケーション障害です。",
         "講演会に手話通訳と要約筆記をつける。",
         "健聴者への啓発が必要だ。",
@@ -754,14 +789,14 @@ class PhraseManager {
         "ユニバーサルデザインのまちづくりを推進。",
         "欠格条項の廃止で聴覚障害者も免許が取れた。",
         "私は中途失聴者です。",
-        "中途失聴とは、難聴者運動でできた言葉。",
-        "ろう・難聴はアイデンティティの問題。",
+        "「中途失聴」は、難聴者運動でできた言葉。",
+        "中途失聴者の団体に、要約筆記者を派遣する。",
         "昨日はボランティア集会に参加した。",
-        "伝音難聴には補聴器が有効です。",
+        "ご意見よろしくお願いします。",
         "中途失聴者は、以前は健聴者だった。",
         "伝音難聴には補聴器が有効。",
         "難聴者協会の会員の多くは感音難聴だ。",
-        "聴覚障害者向けの福祉制度は少ない。",
+        "耳硬化症による伝音難聴。",
         "要約筆記者の養成は県の事業だ。",
         "補聴器はフィッティングが大事。",
         "補聴器と人工内耳の違いは何か。",
@@ -771,7 +806,7 @@ class PhraseManager {
         "私は感音難聴と伝音難聴をあわせもっている。",
         "補聴器をＦＡＸで注文する。",
         "バリアフリーとユニバーサルデザインの違い。",
-        "講師の先生に質問はありませんか？",
+        "先生に質問はありませんか？",
         "ボランティアとは、自発的という意味。",
         "認定補聴器専門店で補聴器を買う。",
         "要約筆記の体験講座があります。",

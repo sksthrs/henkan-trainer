@@ -115,6 +115,10 @@ input, button, select, option {
   line-height: 140%;
 }
 
+#description .unavailable {
+  color: #a0a0a0;
+}
+
 #last-score {
   border: 1px solid #404040;
   padding: 2dvh 2dvw;
@@ -129,6 +133,11 @@ input, button, select, option {
   color: #008000;
   font-weight: bold;
   text-align: center;
+}
+
+#erase-container {
+  text-align: end;
+  font-size: 80%;
 }
 
 #exercise {
