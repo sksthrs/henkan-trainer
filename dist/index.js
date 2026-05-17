@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
     // ========== ========== タイマー ========== ==========
     const timer = new TickingTimer();
     /** １回の練習時間 [秒] */
-    const T_EXERCISE = 30;
+    const T_EXERCISE = 180;
     const current = {
         state: 'opening',
         letters: 0,
