@@ -135,7 +135,7 @@ input, button, select, option {
   text-align: center;
 }
 
-#erase-container {
+#toolarea {
   text-align: end;
   font-size: 80%;
 }
@@ -177,6 +177,41 @@ input, button, select, option {
   width: 100%;
   font-size: min(6dvh, 6dvw);
   padding: 0.2em 0.2em;
+}
+
+#shortcut-dialog table {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+#shortcut-dialog tr {
+  border: 1px solid black;
+}
+
+#shortcut-dialog th {
+  background-color: #c0ffc0;
+  border: 1px solid black;
+  text-align: center;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#shortcut-dialog td
+{
+  border: 1px solid black;
+  text-align: start;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#shortcut-dialog ul
+{
+  line-height: 120%;
+}
+
+#shortcut-dialog div
+{
+  text-align: end;
 }
 
 #log-open {

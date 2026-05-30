@@ -48,6 +48,9 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
     const exercisePeriod = document.getElementById('exercise-period');
     exercisePeriod.textContent = (T_EXERCISE / 60).toString();
     const eraseButton = document.getElementById('erase-records');
+    const showShortcutButton = document.getElementById('show-shortcuts');
+    const shortcutDialog = document.getElementById('shortcut-dialog');
+    const shortcutDialogCloseButton = document.getElementById('shortcut-dialog-close-button');
     const logOpenButton = document.getElementById('log-open');
     const logCloseButton = document.getElementById('log-close');
     const logDialog = document.getElementById('log-dialog');
@@ -61,6 +64,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
             case "opening":
                 updateLastResult();
                 openingDialog.showModal();
+                showShortcutButton.blur();
                 eraseButton.blur();
                 break;
             case "exercising":
@@ -80,6 +84,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
                 updateLastResult();
                 updateStatusArea();
                 openingDialog.showModal();
+                showShortcutButton.blur();
                 eraseButton.blur();
                 lastScore.animate([
                     { backgroundColor: '#000000' },
@@ -187,7 +192,22 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
                 Sound.obj().playSound('fail');
             }
         });
+        showShortcutButton.addEventListener('click', _ => {
+            shortcutDialog.showModal();
+        });
+        shortcutDialogCloseButton.addEventListener('click', _ => {
+            shortcutDialog.close();
+        });
+        shortcutDialog.addEventListener('cancel', _ => {
+            showShortcutButton.blur();
+            eraseButton.blur();
+        });
+        shortcutDialog.addEventListener('close', _ => {
+            showShortcutButton.blur();
+            eraseButton.blur();
+        });
         eraseButton.addEventListener('click', _ => {
+            showShortcutButton.blur();
             eraseButton.blur();
             AppConfig.obj().clearRecords();
             updateLastResult();

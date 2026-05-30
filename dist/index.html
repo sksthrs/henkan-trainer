@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HenkanTrainer v0.3</title>
-  <link href="main.css?0_3" rel="stylesheet">
+  <title>HenkanTrainer v0.4</title>
+  <link href="main.css?0_4" rel="stylesheet">
   <meta name="description" content="HenkanTrainer - 入力＆変換練習ツール">
   <meta property="og:title" content="HenkanTrainer">
   <meta property="og:description" content="入力＆変換練習ツール">
@@ -67,8 +67,66 @@
           <li><span class="shortcut">緑色で下線つきの部分</span>は登録単語の部分です。登録単語を活用して加速しましょう</li>
         </ul>
       </div>
-      <div id="erase-container"><button id="erase-records">成績を初期化</button></div>
+      <div id="toolarea">
+        <button id="show-shortcuts">登録単語一覧</button>
+        <button id="erase-records">成績を初期化</button>
+      </div>
     </div>
+  </dialog>
+  <dialog id="shortcut-dialog" closedby="any">
+    <!-- 案内ページにも同じものを置くので意図的にHTMLに直接記載 -->
+    <table>
+      <tr>
+        <th>単語</th><th>読み（例）</th>
+        <th>カタカナ語・定型文</th><th>読み（例）</th>
+      </tr>
+      <tr>
+        <td>難聴者</td><td>なしゃ</td>
+        <td>バリアフリー</td><td>ｂｆ</td>
+      </tr>
+      <tr>
+        <td>健聴者</td><td>けしゃ</td>
+        <td>コミュニケーション</td><td>こみ</td>
+      </tr>
+      <tr>
+        <td>伝音難聴</td><td>でんな</td>
+        <td>ボランティア</td><td>ぼら</td>
+      </tr>
+      <tr>
+        <td>感音難聴</td><td>かんな</td>
+        <td>ユニバーサルデザイン</td><td>うｄ</td>
+      </tr>
+      <tr>
+        <td>情報保障</td><td>じほ</td>
+        <td>ノーマライゼーション</td><td>のーま</td>
+      </tr>
+      <tr>
+        <td>補聴器</td><td>ほき</td>
+        <td>ありがとうございます。</td><td>あごす</td>
+      </tr>
+      <tr>
+        <td>人工内耳</td><td>じんな</td>
+        <td>ありがとうございました。</td><td>あごた</td>
+      </tr>
+      <tr>
+        <td>要約筆記</td><td>よひ</td>
+        <td>質問はありませんか？</td><td>しつあり</td>
+      </tr>
+      <tr>
+        <td>要約筆記者</td><td>よしゃ</td>
+        <td>よろしくお願いします。</td><td>よろねが</td>
+      </tr>
+      <tr><td>聴覚障害</td><td>ちし</td><td></td><td></td></tr>
+      <tr><td>聴覚障害者</td><td>ちしゃ</td><td></td><td></td></tr>
+      <tr><td>中途失聴</td><td>ちゅうしつ</td><td></td><td></td></tr>
+      <tr><td>中途失聴者</td><td>ちゅうしつしゃ</td><td></td><td></td></tr>
+      <tr><td>失聴</td><td>しっちょう</td><td></td><td></td></tr>
+    </table>
+    <ul>
+      <li>「失聴」は品詞を「サ変動詞」で登録するとベター</li>
+      <li>読みが短くて登録できない場合は品詞を「短縮読み」にして登録</li>
+    </ul>
+    <div><button id="shortcut-dialog-close-button">閉じる</button></div>
   </dialog>
   <dialog id="log-dialog">
     <div id="log-content">
@@ -76,6 +134,6 @@
       <button id="log-close">OK</button>
     </div>
   </dialog>
-  <script type="module" src="index.js?0_3"></script>
+  <script type="module" src="index.js?0_4"></script>
 </body>
 </html>

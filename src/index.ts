@@ -88,6 +88,12 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
 
   const eraseButton = document.getElementById('erase-records') as HTMLButtonElement;
 
+  const showShortcutButton = document.getElementById('show-shortcuts') as HTMLButtonElement;
+
+  const shortcutDialog = document.getElementById('shortcut-dialog') as HTMLDialogElement;
+
+  const shortcutDialogCloseButton = document.getElementById('shortcut-dialog-close-button') as HTMLButtonElement;
+
   const logOpenButton = document.getElementById('log-open') as HTMLButtonElement;
 
   const logCloseButton = document.getElementById('log-close') as HTMLButtonElement;
@@ -108,6 +114,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
       case "opening":
         updateLastResult();
         openingDialog.showModal();
+        showShortcutButton.blur();
         eraseButton.blur();
         break;
       case "exercising":
@@ -127,6 +134,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
         updateLastResult();
         updateStatusArea();
         openingDialog.showModal();
+        showShortcutButton.blur();
         eraseButton.blur();
         lastScore.animate(
           [
@@ -248,7 +256,25 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
       }
     });
 
+    showShortcutButton.addEventListener('click', _ => {
+      shortcutDialog.showModal();
+    });
+
+    shortcutDialogCloseButton.addEventListener('click', _ => {
+      shortcutDialog.close();
+    });
+
+    shortcutDialog.addEventListener('cancel', _ => {
+      showShortcutButton.blur();
+      eraseButton.blur();
+    });
+    shortcutDialog.addEventListener('close', _ => {
+      showShortcutButton.blur();
+      eraseButton.blur();
+    });
+
     eraseButton.addEventListener('click', _ => {
+      showShortcutButton.blur();
       eraseButton.blur();
       AppConfig.obj().clearRecords();
       updateLastResult();
