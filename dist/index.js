@@ -45,9 +45,11 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
     const lastTypos = document.getElementById('last-typos');
     // const lastTyposContainer = document.getElementById('last-typos-container') as HTMLSpanElement;
     const conguraturations = document.getElementById('conguraturations');
+    const exerciseCountElement = document.getElementById('exercise-count');
     const exercisePeriod = document.getElementById('exercise-period');
     exercisePeriod.textContent = (T_EXERCISE / 60).toString();
-    const eraseButton = document.getElementById('erase-records');
+    const eraseRecordsButton = document.getElementById('erase-records');
+    const eraseCountButton = document.getElementById('erase-count');
     const showShortcutButton = document.getElementById('show-shortcuts');
     const shortcutDialog = document.getElementById('shortcut-dialog');
     const shortcutDialogCloseButton = document.getElementById('shortcut-dialog-close-button');
@@ -65,7 +67,8 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
                 updateLastResult();
                 openingDialog.showModal();
                 showShortcutButton.blur();
-                eraseButton.blur();
+                eraseRecordsButton.blur();
+                eraseCountButton.blur();
                 break;
             case "exercising":
                 current.letters = 0;
@@ -85,7 +88,8 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
                 updateStatusArea();
                 openingDialog.showModal();
                 showShortcutButton.blur();
-                eraseButton.blur();
+                eraseRecordsButton.blur();
+                eraseCountButton.blur();
                 lastScore.animate([
                     { backgroundColor: '#000000' },
                     { backgroundColor: '#ffff00', offset: 0.2 },
@@ -120,6 +124,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
             lastMaxLetters.textContent = highscore.letters.toString();
             lastPhrases.textContent = current.phrases.toString();
             lastTypos.textContent = current.typos.toString();
+            exerciseCountElement.textContent = AppConfig.get().exerciseCount.toString();
         }
     }
     function setEventHandlers() {
@@ -200,16 +205,27 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
         });
         shortcutDialog.addEventListener('cancel', _ => {
             showShortcutButton.blur();
-            eraseButton.blur();
+            eraseRecordsButton.blur();
+            eraseCountButton.blur();
         });
         shortcutDialog.addEventListener('close', _ => {
             showShortcutButton.blur();
-            eraseButton.blur();
+            eraseRecordsButton.blur();
+            eraseCountButton.blur();
         });
-        eraseButton.addEventListener('click', _ => {
+        eraseRecordsButton.addEventListener('click', _ => {
             showShortcutButton.blur();
-            eraseButton.blur();
+            eraseRecordsButton.blur();
+            eraseCountButton.blur();
             AppConfig.obj().clearRecords();
+            updateLastResult();
+            updateStatusArea();
+        });
+        eraseCountButton.addEventListener('click', _ => {
+            showShortcutButton.blur();
+            eraseRecordsButton.blur();
+            eraseCountButton.blur();
+            AppConfig.obj().clearExerciseCount();
             updateLastResult();
             updateStatusArea();
         });
@@ -530,7 +546,7 @@ class Sound {
 }
 /**
  * ――――――――――――――――――――――――――――――
- * （ある程度）永続的に保存される設定。実質上はハイスコア情報。
+ * （ある程度）永続的に保存される設定（localstorage保存なのでmacOSやiOSでは消えやすい）
  * ――――――――――――――――――――――――――――――
  */
 class AppConfig {
@@ -581,6 +597,7 @@ class AppConfig {
         return {
             highScores: [],
             recentScores: [],
+            exerciseCount: 0,
         };
     }
     /** 設定を保存する */
@@ -626,6 +643,9 @@ class AppConfig {
                         }
                     }
                 }
+                if (Util.isNumber(obj?.exerciseCount)) {
+                    config.exerciseCount = obj.exerciseCount;
+                }
                 Log.write(`config loaded : ${JSON.stringify(config)}`);
                 return config;
             }
@@ -663,6 +683,8 @@ class AppConfig {
             this.appConfig.highScores.slice(this.MAX_RECORDS);
         }
         const ixNewData = this.appConfig.highScores.findIndex(score => score.timestamp === timestamp);
+        // 練習回数の更新
+        this.appConfig.exerciseCount++;
         // データ保存
         this.saveConfig(this.appConfig);
         return (ixNewData < 0) ? ixNewData : (ixNewData + 1);
@@ -670,6 +692,9 @@ class AppConfig {
     clearRecords() {
         this.appConfig.highScores.splice(0);
         this.appConfig.recentScores.splice(0);
+    }
+    clearExerciseCount() {
+        this.appConfig.exerciseCount = 0;
     }
 }
 /**
@@ -792,6 +817,7 @@ class PhraseManager {
         "ボランティア",
         "ユニバーサルデザイン",
         "ノーマライゼーション",
+        "ヒアリングループ",
         "ありがとうございます。",
         "ありがとうございました。",
         "質問はありませんか？",
@@ -869,6 +895,7 @@ class PhraseManager {
         "片耳だけの失聴だが、人工内耳にできた。",
         "聴覚障害がない人を健聴者という。",
         "盲ろう者の情報保障手段はさまざまだ。",
+        "６月６日は補聴器の日。",
     ];
 }
 export {};
