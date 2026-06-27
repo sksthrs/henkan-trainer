@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', _evDCL => {
 
   // const lastTyposContainer = document.getElementById('last-typos-container') as HTMLSpanElement;
 
-  const conguraturations = document.getElementById('conguraturations') as HTMLDivElement;
+  const conguraturations = document.getElementById('conguraturations') as HTMLParagraphElement;
 
   const exerciseCountElement = document.getElementById('exercise-count') as HTMLSpanElement;
 
